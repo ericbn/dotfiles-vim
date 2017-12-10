@@ -1,6 +1,7 @@
 " vim:et sts=2 sw=2
+set encoding=utf-8
 if has('win32')
-  let s:vim_home=$HOME.'/vimfiles'
+  let s:vim_home=$USERPROFILE.'/vimfiles'
 else
   let s:vim_home=$HOME.'/.vim'
 endif
@@ -8,7 +9,9 @@ endif
 " To install vim-plug:
 " curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 call plug#begin(s:vim_home.'/bundle')
-Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
+if executable('fzf')
+  Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
+endif
 Plug 'ericbn/vim-solarized'
 Plug 'mbbill/undotree', { 'on': 'UndotreeToggle' }
 Plug 'tpope/vim-commentary'
@@ -31,12 +34,13 @@ if has('persistent_undo')
 endif
 
 set colorcolumn=+1
-set hlsearch
+set diffopt+=vertical " Diff mode defaults to vertical splits
 set expandtab
+set hlsearch
 set ignorecase smartcase
 set keymodel=startsel " SHIFT-<special key> starts visual selection
 set list listchars=tab:»\ ,trail:·,extends:→,precedes:←
-set showbreak=↪\ 
+set showbreak=↪\  " Show break at start of wrapped lines
 if has('mouse')
   set mouse=a
 endif
@@ -59,17 +63,14 @@ if !has('gui_running')
     vnoremap <C-v> "+p
     " inoremap <C-v> <C-r><C-o>+
   endif
-
-  " Change cursor shape between modes
-  if exists('$ITERM_PROFILE')
-    let &t_EI = "\<Esc>]50;CursorShape=0\x7" " Block in normal mode
-    let &t_SI = "\<Esc>]50;CursorShape=1\x7" " Bar in insert mode
-    let &t_SR = "\<Esc>]50;CursorShape=2\x7" " Underline in replace mode
-  endif
 endif
 
-" Expand <C-x>% to the path of the active buffer on Ex command-line
-" cnoremap <C-x>% <C-r>=expand('%:h').'/'<CR>
+if exists('$ITERM_PROFILE')
+  " Change cursor shape between modes
+  let &t_EI = "\<Esc>]50;CursorShape=0\x7" " Block in normal mode
+  let &t_SI = "\<Esc>]50;CursorShape=1\x7" " Bar in insert mode
+  let &t_SR = "\<Esc>]50;CursorShape=2\x7" " Underline in replace mode
+endif
 
 if executable('rg')
   set grepprg=rg\ --vimgrep
@@ -94,22 +95,21 @@ nnoremap <silent> <C-q> :qall<CR>
 nnoremap Y y$
 
 let mapleader=','
-nnoremap <leader>/ :History/<CR>
-nnoremap <leader>: :History:<CR>
-nnoremap <leader>b :Buffers<CR>
 nnoremap <leader>d :windo <C-R>=&diff ? 'diffoff' : 'diffthis'<CR><CR>
-nnoremap <leader>h :History<CR>
 nnoremap <leader>l :lcd <C-r>=expand('%:h')<CR><CR>
 nnoremap <leader>s :%s/<C-r>///g<Left><Left>
 nnoremap <leader>u :UndotreeToggle<CR>
 nnoremap <leader>w :call RemoveTrailingSpace()<CR>
 
-" Auto Pairs
-let g:AutoPairsCenterLine=0
-
 " Fzf
-let g:fzf_buffers_jump=1 " [Buffers] Jump to the existing window if possible
-nnoremap <silent> <C-t> :Files<CR>
+if executable('fzf')
+  let g:fzf_buffers_jump=1 " [Buffers] Jump to the existing window if possible
+  nnoremap <silent> <C-p> :Files<CR>
+  nnoremap <silent> <leader>/ :History/<CR>
+  nnoremap <silent> <leader>: :History:<CR>
+  nnoremap <silent> <leader>b :Buffers<CR>
+  nnoremap <silent> <leader>h :History<CR>
+endif
 
 " Netrw
 let g:netrw_dirhistmax=0 " Don't write to .netrwhist
@@ -130,7 +130,7 @@ set statusline+=%{fugitive#statusline('','\ ')}
 set statusline+=%= " Separation point between left and right aligned items
 set statusline+=\ %{&filetype!=#''?&filetype:'none'}
 set statusline+=%(\ %{(&bomb\|\|&fileencoding!~#'^$\\\|utf-8'?'\ '.&fileencoding.(&bomb?'-bom':''):'')
-  \.(&fileformat!=#'unix'?'\ '.&fileformat:'')}%)
+      \.(&fileformat!=#(has('win32')?'dos':'unix')?'\ '.&fileformat:'')}%)
 set statusline+=%(\ \ %{&modifiable?SleuthIndicator():''}%)
 set statusline+=\ %* " Restore normal highlight
 set statusline+=\ %{&number?'':printf('%2d,',line('.'))} " Line number
