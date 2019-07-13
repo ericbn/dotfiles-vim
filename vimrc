@@ -13,15 +13,21 @@ if executable('fzf')
   Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 endif
 Plug 'ericbn/vim-solarized'
+Plug 'junegunn/vim-peekaboo'
+Plug 'markonm/traces.vim'
 Plug 'mbbill/undotree', { 'on': 'UndotreeToggle' }
 Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-dispatch'
+Plug 'tpope/vim-endwise'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-repeat'
+Plug 'tpope/vim-rhubarb'
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-sleuth'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-unimpaired'
 Plug 'tpope/vim-vinegar'
+Plug 'wellle/targets.vim'
 call plug#end()
 
 " Backup and undo files
@@ -35,12 +41,15 @@ endif
 
 set colorcolumn=+1
 set diffopt+=vertical " Diff mode defaults to vertical splits
+set diffopt+=algorithm:histogram " Use histogram algorithm
+set diffopt+=indent-heuristic " Use indent heuristics
 set expandtab
 set hlsearch
 set ignorecase smartcase
+set iskeyword+=-
 set keymodel=startsel " SHIFT-<special key> starts visual selection
 set list listchars=tab:»\ ,trail:·,extends:→,precedes:←
-set showbreak=↪\  " Show break at start of wrapped lines
+set showbreak=↪ " Show break at start of wrapped lines
 if has('mouse')
   set mouse=a
 endif
@@ -54,16 +63,6 @@ function! RemoveTrailingSpace()
   %s/\s\+$//e
   call setpos('.', l:pos)
 endfunction
-
-if !has('gui_running')
-  " Copy and paste
-  if has('clipboard')
-    vnoremap <C-c> "+y
-    vnoremap <C-x> "+d
-    vnoremap <C-v> "+p
-    " inoremap <C-v> <C-r><C-o>+
-  endif
-endif
 
 if exists('$ITERM_PROFILE')
   " Change cursor shape between modes
@@ -88,23 +87,36 @@ augroup vimrc
 augroup END
 
 " Requires `stty -ixon -ixoff`
-inoremap <silent> <C-s> <Esc>:up<CR>
-nnoremap <silent> <C-s> :up<CR>
-nnoremap <silent> <C-q> :qall<CR>
+" inoremap <silent> <C-s> <Esc>:up<CR>
+" nnoremap <silent> <C-s> :up<CR>
 
 nnoremap Y y$
 
-let mapleader=','
-nnoremap <leader>d :windo <C-R>=&diff ? 'diffoff' : 'diffthis'<CR><CR>
+let mapleader=' '
+nnoremap <leader>d :windo <C-r>=&diff ? 'diffoff' : 'diffthis'<CR><CR>
 nnoremap <leader>l :lcd <C-r>=expand('%:h')<CR><CR>
+nnoremap <leader>q :qall<CR>
 nnoremap <leader>s :%s/<C-r>///g<Left><Left>
 nnoremap <leader>u :UndotreeToggle<CR>
 nnoremap <leader>w :call RemoveTrailingSpace()<CR>
 
+" 'in document' (from first line to last; cursor at top--ie, gg)
+xnoremap <silent> id :<C-u>normal! G$Vgg0<CR>
+onoremap <silent> id :<C-u>normal! GVgg<CR>
+
+if !has('gui_running')
+  " Copy and paste
+  if has('clipboard')
+    vnoremap <C-c> "+y
+    vnoremap <C-x> "+d
+    vnoremap <C-v> "+p
+    " inoremap <C-v> <C-r><C-o>+
+  endif
+endif
+
 " Fzf
 if executable('fzf')
-  let g:fzf_buffers_jump=1 " [Buffers] Jump to the existing window if possible
-  nnoremap <silent> <C-p> :Files<CR>
+  nnoremap <silent> <leader>f :Files<CR>
   nnoremap <silent> <leader>/ :History/<CR>
   nnoremap <silent> <leader>: :History:<CR>
   nnoremap <silent> <leader>b :Buffers<CR>
@@ -113,27 +125,15 @@ endif
 
 " Netrw
 let g:netrw_dirhistmax=0 " Don't write to .netrwhist
+let g:netrw_liststyle=1 " Show time stamp and file size
 
 " Solarized
 set background=dark
 colorscheme solarized
 
 " Statusline
-set statusline=
-" set statusline+=%(%{&filetype!='help'?bufnr('%'):''}\ \ %)
-set statusline+=%< " Where to truncate line
-set statusline+=%f\  " Path to the file in the buffer, as typed or relative to current directory
-set statusline+=%{&modified?'+\ ':''}
-set statusline+=%{&readonly?'\ ':''}
-set statusline+=%1*\  " Set highlight group to User1
-set statusline+=%{fugitive#statusline('','\ ')}
-set statusline+=%= " Separation point between left and right aligned items
-set statusline+=\ %{&filetype!=#''?&filetype:'none'}
-set statusline+=%(\ %{(&bomb\|\|&fileencoding!~#'^$\\\|utf-8'?'\ '.&fileencoding.(&bomb?'-bom':''):'')
-      \.(&fileformat!=#(has('win32')?'dos':'unix')?'\ '.&fileformat:'')}%)
-set statusline+=%(\ \ %{&modifiable?SleuthIndicator():''}%)
-set statusline+=\ %* " Restore normal highlight
-set statusline+=\ %{&number?'':printf('%2d,',line('.'))} " Line number
-set statusline+=%-2v " Virtual column number
-set statusline+=\ %2p%% " Percentage through file in lines as in |CTRL-G|
 hi User1 ctermfg=14 ctermbg=0 guifg=#93a1a1 guibg=#073642
+augroup statusline
+  autocmd!
+  autocmd TerminalOpen * setlocal statusline=%f
+augroup END
