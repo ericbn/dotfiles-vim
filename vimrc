@@ -41,10 +41,13 @@ endif
 
 set colorcolumn=+1
 set diffopt+=vertical " Diff mode defaults to vertical splits
-set diffopt+=algorithm:histogram " Use histogram algorithm
-set diffopt+=indent-heuristic " Use indent heuristics
-set expandtab
-set hlsearch
+if has('nvim-0.3.2') || has('patch-8.1.0360')
+  set diffopt+=algorithm:histogram " Use histogram algorithm
+  set diffopt+=indent-heuristic " Use indent heuristics
+endif
+" set cursorline " Highlight the line of the cursor with CursorLine
+set expandtab " Indent with spaces
+set hlsearch " Highlight all search matches
 set ignorecase smartcase
 set iskeyword+=-
 set keymodel=startsel " SHIFT-<special key> starts visual selection
@@ -127,7 +130,15 @@ endif
 let g:netrw_dirhistmax=0 " Don't write to .netrwhist
 let g:netrw_liststyle=1 " Show time stamp and file size
 
-" Solarized
+" Make search results appear in the middle of the screen
+nnoremap n nzz
+nnoremap N Nzz
+nnoremap * *zz
+nnoremap # #zz
+nnoremap g* g*zz
+nnoremap g# g#zz
+
+" Colorscheme
 set background=dark
 colorscheme solarized
 
@@ -135,5 +146,7 @@ colorscheme solarized
 hi User1 ctermfg=14 ctermbg=0 guifg=#93a1a1 guibg=#073642
 augroup statusline
   autocmd!
-  autocmd TerminalOpen * setlocal statusline=%f
+  if has('terminal')
+    " autocmd TerminalOpen * setlocal statusline=%f
+  endif
 augroup END
