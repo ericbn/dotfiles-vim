@@ -1,6 +1,6 @@
 function! ZshJoin()
   let v:errmsg = ""
-  silent! s/\vif\s+(.*)\s*[;\n]+\s*then\n^\s*(.*)\s*\n^\s*fi/\1 \&\& \2/
+  silent! s/\vif\s+(.*)\s*[;\n]+\s*then\n^\s*(.*)\s*\n^\s*fi/if \1 \2/
   if v:errmsg != ""
     silent! s/\vfor\s+(.{-})\s+in\s+(.*)\s*[;\n]+\s*do\n^\s*(.*)\s*\n^\s*done/for \1 (\2) \3/
   endif
