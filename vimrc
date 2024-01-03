@@ -19,6 +19,7 @@ call minpac#add('markonm/traces.vim') " Range, pattern and substitute preview fo
 call minpac#add('mbbill/undotree') "The undo history visualizer for VIM
 call minpac#add('raimon49/requirements.txt.vim') " Requirements File Format syntax support for Vim
 call minpac#add('ralismark/opsort.vim') " Custom operator that sorts lines
+call minpac#add('tpope/vim-abolish') " Work with several variants of a word at once
 call minpac#add('tpope/vim-commentary') " Comment stuff out
 call minpac#add('tpope/vim-dispatch') " Asynchronous build and test dispatcher
 call minpac#add('tpope/vim-endwise') " Wisely add endfunction/endif/more in vim script, etc
@@ -54,6 +55,7 @@ if has('nvim-0.3.2') || has('patch-8.1.0360')
   set diffopt+=indent-heuristic " Use indent heuristics
 endif
 set expandtab " Indent with spaces
+set virtualedit=block " Allow virtual editing in Visual block mode
 set hlsearch " Highlight all search matches
 set ignorecase smartcase
 set iskeyword+=-
@@ -83,10 +85,6 @@ if executable('rg')
   set grepformat^=%f:%l:%c:%m
 endif
 
-" Requires `stty -ixon -ixoff`
-" inoremap <silent> <C-s> <Esc>:up<CR>
-" nnoremap <silent> <C-s> :up<CR>
-
 nnoremap Y y$
 " Don't use Ex mode, use Q for formatting.
 nnoremap Q gq
@@ -97,11 +95,12 @@ nnoremap g. /\V<C-r>"<CR>cgn<C-a><Esc>
 let mapleader=' '
 nnoremap <leader>d :windo <C-r>=&diff ? 'diffoff' : 'diffthis'<CR><CR>
 nnoremap <leader>jj :set ft=json<CR>gg=G
+nnoremap <leader>jc :%!python3 -c 'import json, sys; print(json.dumps(json.loads(sys.stdin.read()), separators=(",", ":")))'<CR>:set ft=json<CR>
 nnoremap <leader>jp :%!python3 -c 'import json, sys; print(json.loads(sys.stdin.read()))' \| black -q -<CR>:set ft=python<CR>
 nnoremap <leader>jy :%!ruby -rjson -ryaml -e 'print YAML.dump(JSON.load(ARGF.read()))'<CR>:set ft=yaml<CR>
 nnoremap <leader>pj :%!python3 -c 'import ast, json, sys; print(json.dumps(ast.literal_eval(sys.stdin.read()), indent=2))'<CR>:set ft=json<CR>
 nnoremap <leader>pp :%!python3 -c 'import ast, sys; print(ast.literal_eval(sys.stdin.read()))' \| black -q -<CR>:set ft=python<CR>
-nnoremap <leader>yj :%!ruby -rjson -ryaml -e 'print YAML.load(ARGF.read()).to_json'<CR>:set ft=json<CR>
+nnoremap <leader>yj :%!ruby -rjson -rjson -ryaml -e 'print(JSON.pretty_generate(YAML.load(ARGF.read())))'<CR>:set ft=json<CR>
 nnoremap <leader>l :lcd <C-r>=expand('%:h')<CR><CR>
 nnoremap <leader>q :qall<CR>
 nnoremap <leader>s :%s///g<Left><Left>
