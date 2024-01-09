@@ -62,10 +62,13 @@ set iskeyword+=-
 set keymodel=startsel " SHIFT-<special key> starts visual selection
 set list listchars=tab:»\ ,trail:·,extends:→,precedes:←
 set showbreak=↪ " Show break at start of wrapped lines
+set nojoinspaces " Don't insert two spaces after .?! with join command
 set pastetoggle=<F10>
 set showcmd " Show (partial) command in the last line.
 set spelllang=en_us
-set wildignore+=.DS_Store,.git,.svn,node_modules
+set splitright
+set wildignore=.DS_Store,.git,.svn,node_modules
+set wildoptions=pum " Display completion matches using popup menu
 
 function! RemoveTrailingSpace()
   let l:pos = getpos('.')
@@ -96,11 +99,11 @@ let mapleader=' '
 nnoremap <leader>d :windo <C-r>=&diff ? 'diffoff' : 'diffthis'<CR><CR>
 nnoremap <leader>jj :set ft=json<CR>gg=G
 nnoremap <leader>jc :%!python3 -c 'import json, sys; print(json.dumps(json.loads(sys.stdin.read()), separators=(",", ":")))'<CR>:set ft=json<CR>
-nnoremap <leader>jp :%!python3 -c 'import json, sys; print(json.loads(sys.stdin.read()))' \| black -q -<CR>:set ft=python<CR>
+nnoremap <leader>jp :%!python3 -c 'import json, sys; print(json.loads(sys.stdin.read()))'<CR>:set ft=python<CR>gg=G
 nnoremap <leader>jy :%!ruby -rjson -ryaml -e 'print YAML.dump(JSON.load(ARGF.read()))'<CR>:set ft=yaml<CR>
 nnoremap <leader>pj :%!python3 -c 'import ast, json, sys; print(json.dumps(ast.literal_eval(sys.stdin.read()), indent=2))'<CR>:set ft=json<CR>
-nnoremap <leader>pp :%!python3 -c 'import ast, sys; print(ast.literal_eval(sys.stdin.read()))' \| black -q -<CR>:set ft=python<CR>
-nnoremap <leader>yj :%!ruby -rjson -rjson -ryaml -e 'print(JSON.pretty_generate(YAML.load(ARGF.read())))'<CR>:set ft=json<CR>
+nnoremap <leader>pp :%!python3 -c 'import ast, sys; print(ast.literal_eval(sys.stdin.read()))'<CR>:set ft=python<CR>gg=G
+nnoremap <leader>yj :%!ruby -rjson -ryaml -e 'print(JSON.pretty_generate(YAML.load(ARGF.read())))'<CR>:set ft=json<CR>
 nnoremap <leader>l :lcd <C-r>=expand('%:h')<CR><CR>
 nnoremap <leader>q :qall<CR>
 nnoremap <leader>s :%s///g<Left><Left>
