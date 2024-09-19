@@ -4,7 +4,7 @@ if &compatible
 endif
 
 " To install minpac
-" git clone https://github.com/k-takata/minpac.git ~/.vim/pack/minpac/opt/minpac
+" git clone https://github.com/k-takata/minpac.git ~/.config/vim/pack/minpac/opt/minpac
 packadd minpac
 call minpac#init()
 call minpac#add('k-takata/minpac', {'type': 'opt'})
@@ -14,7 +14,6 @@ if executable('fzf')
 endif
 call minpac#add('bfrg/vim-jqplay') " Run jq interactively in Vim
 call minpac#add('ericbn/vim-solarized')
-call minpac#add('majutsushi/tagbar') " Vim plugin that displays tags in a window, ordered by scope
 call minpac#add('markonm/traces.vim') " Range, pattern and substitute preview for Vim
 call minpac#add('mbbill/undotree') "The undo history visualizer for VIM
 call minpac#add('raimon49/requirements.txt.vim') " Requirements File Format syntax support for Vim
@@ -24,6 +23,7 @@ call minpac#add('tpope/vim-commentary') " Comment stuff out
 call minpac#add('tpope/vim-dispatch') " Asynchronous build and test dispatcher
 call minpac#add('tpope/vim-endwise') " Wisely add endfunction/endif/more in vim script, etc
 call minpac#add('tpope/vim-fugitive') " A Git wrapper so awesome, it should be illegal
+call minpac#add('junegunn/gv.vim') " A git commit browser in Vim
 call minpac#add('tpope/vim-repeat') " Enable repeating supported plugin maps with `.`
 call minpac#add('tpope/vim-rhubarb') " GitHub extension for fugitive.vim
 call minpac#add('tpope/vim-sensible') " Defaults everyone can agree on
@@ -35,11 +35,7 @@ call minpac#add('triglav/vim-visual-increment') "  Increase sequence of numbers 
 call minpac#add('wellle/targets.vim') " Vim plugin that provides additional text objects
 
 " Backup and undo files
-if has('win32')
-  let s:vim_home=$USERPROFILE.'/vimfiles'
-else
-  let s:vim_home=$HOME.'/.vim'
-endif
+let s:vim_home = fnamemodify(resolve(expand('<sfile>:p')), ':h')
 set backup
 let &backupdir=s:vim_home.'/tmp//'
 let &directory=s:vim_home.'/tmp//'
@@ -67,13 +63,13 @@ set pastetoggle=<F10>
 set showcmd " Show (partial) command in the last line.
 set spelllang=en_us
 set splitright
-set wildignore=.DS_Store,.git,.svn,node_modules
+set wildignore=.DS_Store,.git,node_modules
 set wildoptions=pum " Display completion matches using popup menu
 
 function! RemoveTrailingSpace()
-  let l:pos = getpos('.')
+  let l:pos = winsaveview()
   %s/\s\+$//e
-  call setpos('.', l:pos)
+  call winrestview(l:pos)
 endfunction
 
 if exists('$ITERM_PROFILE')
@@ -81,9 +77,13 @@ if exists('$ITERM_PROFILE')
   let &t_EI = "\<Esc>]50;CursorShape=0\x7" " Block in normal mode
   let &t_SI = "\<Esc>]50;CursorShape=1\x7" " Bar in insert mode
   let &t_SR = "\<Esc>]50;CursorShape=2\x7" " Underline in replace mode
+  set termguicolors
 endif
 
-if executable('rg')
+if executable('ugrep')
+  set grepprg=ugrep\ -RInk\ -j\ -u\ --tabs=1\ --ignore-files
+  set grepformat=%f:%l:%c:%m,%f+%l+%c+%m,%-G%f\\\|%l\\\|%c\\\|%m
+elseif executable('rg')
   set grepprg=rg\ --vimgrep
   set grepformat^=%f:%l:%c:%m
 endif
@@ -101,11 +101,13 @@ nnoremap <leader>jj :set ft=json<CR>gg=G
 nnoremap <leader>jc :%!python3 -c 'import json, sys; print(json.dumps(json.loads(sys.stdin.read()), separators=(",", ":")))'<CR>:set ft=json<CR>
 nnoremap <leader>jp :%!python3 -c 'import json, sys; print(json.loads(sys.stdin.read()))'<CR>:set ft=python<CR>gg=G
 nnoremap <leader>jy :%!ruby -rjson -ryaml -e 'print YAML.dump(JSON.load(ARGF.read()))'<CR>:set ft=yaml<CR>
+nnoremap <leader>j, :%!jq -r '(map(keys) \| add \| unique) as $c \| map(. as $r \| $c \| map($r[.] \| if type == "null" then "" else tostring end)) as $r \| $c, $r[] \| @csv'<CR>:set ft=csv<CR>
 nnoremap <leader>pj :%!python3 -c 'import ast, json, sys; print(json.dumps(ast.literal_eval(sys.stdin.read()), indent=2))'<CR>:set ft=json<CR>
-nnoremap <leader>pp :%!python3 -c 'import ast, sys; print(ast.literal_eval(sys.stdin.read()))'<CR>:set ft=python<CR>gg=G
+nnoremap <leader>pp :%!python3 -c 'import ast, sys; print(ast.literal_eval(sys.stdin.read()))'<CR>
 nnoremap <leader>yj :%!ruby -rjson -ryaml -e 'print(JSON.pretty_generate(YAML.load(ARGF.read())))'<CR>:set ft=json<CR>
 nnoremap <leader>l :lcd <C-r>=expand('%:h')<CR><CR>
 nnoremap <leader>q :qall<CR>
+nnoremap <leader>r :%!ruff check --fix-only -s -<CR>
 nnoremap <leader>s :%s///g<Left><Left>
 nnoremap <leader>t :TagbarToggle<CR>
 nnoremap <leader>u :UndotreeToggle<CR>
