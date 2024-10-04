@@ -9,7 +9,7 @@ packadd minpac
 call minpac#init()
 call minpac#add('k-takata/minpac', {'type': 'opt'})
 if executable('fzf')
-  set runtimepath+=/usr/local/opt/fzf
+  let &runtimepath.=','.fnamemodify(resolve(exepath('fzf')), ':h:h')
   call minpac#add('junegunn/fzf.vim')
 endif
 call minpac#add('bfrg/vim-jqplay') " Run jq interactively in Vim
@@ -35,7 +35,7 @@ call minpac#add('triglav/vim-visual-increment') "  Increase sequence of numbers 
 call minpac#add('wellle/targets.vim') " Vim plugin that provides additional text objects
 
 " Backup and undo files
-let s:vim_home = fnamemodify(resolve(expand('<sfile>:p')), ':h')
+let s:vim_home=fnamemodify(resolve(expand('<sfile>:p')), ':h')
 set backup
 let &backupdir=s:vim_home.'/tmp//'
 let &directory=s:vim_home.'/tmp//'
@@ -67,16 +67,16 @@ set wildignore=.DS_Store,.git,node_modules
 set wildoptions=pum " Display completion matches using popup menu
 
 function! RemoveTrailingSpace()
-  let l:pos = winsaveview()
+  let l:pos=winsaveview()
   %s/\s\+$//e
   call winrestview(l:pos)
 endfunction
 
 if exists('$ITERM_PROFILE')
   " Change cursor shape between modes
-  let &t_EI = "\<Esc>]50;CursorShape=0\x7" " Block in normal mode
-  let &t_SI = "\<Esc>]50;CursorShape=1\x7" " Bar in insert mode
-  let &t_SR = "\<Esc>]50;CursorShape=2\x7" " Underline in replace mode
+  let &t_EI="\<Esc>]50;CursorShape=0\x7" " Block in normal mode
+  let &t_SI="\<Esc>]50;CursorShape=1\x7" " Bar in insert mode
+  let &t_SR="\<Esc>]50;CursorShape=2\x7" " Underline in replace mode
   set termguicolors
 endif
 
